@@ -71,10 +71,62 @@ query output:
   "Pratilipi-Awards-Hindi":0.04923198109491926
 }
 ```
-Suggested solution is based on google clouud platform.
-Components used in data pipeline.
-<li> Google Pub/Sub
-  <p> - For event data ingestion. 
-<li> Google BigQuery
-<li> Google Cloud Storage
-<li> Google Dataflow
+Suggested solution is based on google cloud platform.
+## Components used in data pipeline.
+<li> <b>Google Pub/Sub</b>
+  <ul> 
+    <li> Streaming data ingestion for event data to multiple destinations. 
+    <li> Data present at two different source. So two topics are needed (i.e. content-meta and user-interaction).
+    <li> To continously ingest data from source to Pus/Sub topic, one need to integrate source with Pub/Sub. I have used Pub/Sub python client module to push sample data for ingestion into Pub/Sub topics.
+    <li> Code to push data into Pub/Sub topic:
+        <ul>
+           <li> To push data into user-interaction topic: </li>
+                ```
+                        code block
+                ```
+           <li> To push data into content-meta topic: </li>
+        </ul>
+    <li> Data present at PubSub level can also be used as data source for different realtime streaming analytics applications which are dependent on user content interaction.  
+    <li> Similar opensource solution: <b> <i> kafka + big query kafka sink connector </i> </b>
+  </ul>
+</li>
+<br>
+<li> <b> Google BigQuery </b>
+    <ul>
+        <li> Create two table named <i>user-interaction</i> and <i>content-meta.</i>
+        <li> Upload historical data dump via csv upload into both table.
+        <li> Choose auto detect schema option in both table.
+        <li> Create partition in <i>user-interaction</i> table on column <i>updated_at</i>. Partitioning can drastically improve query performance. In our query, there is where clause on <i>updated_at</i> column for date range of past two weeks. Partitioning will help in reducing data scan. It will scan only 14 partition (i.e. 14 days) and will output query much faster. 
+        <li> Both table can be used for other applications (like analytics tool, dashboards/visualization tool) because data is stored in granular level.
+    </ul>
+<br>
+<li><b> Google Cloud Storage </b>
+    <ul>
+            <li> Create a bucket named <i>de-assignment-01</i> (any name)
+            <li> This bucket will be used to store temporary data from google big query.
+    </ul>
+<br>
+<li> <b> Google Dataflow </b>
+    <ul> 
+    <li> Google Cloud Dataflow is a cloud-based data processing service for both batch and real-time data streaming applications. 
+    <li> Create two dataflow job with the help of inbuilt template named <i> pubsub_to_bigquery </i> with mentioned configuration:
+    <li> Subscribe <i>user-interaction</i> topic in Pub/Sub to <i>user-interaction</i> table in bigquery
+    <li> First job config:
+            <ul>
+                 <li> jobName: ps-to-bq-user-interaction_test (any unique name)
+                 <li> inputTopic: projects/pratilipi-de-assignment/topics/user-interaction
+                 <li> outputTableSpec: pratilipi-de-assignment:user_interaction.user_interaction_partitioned
+                 <li> gcpTempLocation: gs://de-assignment-01/test
+            </ul>
+    <li> Subscribe <i>content-meta</i> topic in Pub/Sub to <i>content-meta</i> table in bigquery
+    <li> Second job config:
+            <ul>
+                 <li> jobName: ps-to-bq-content-meta (any unique name)
+                 <li> inputTopic: projects/pratilipi-de-assignment/topics/content-meta
+                 <li> outputTableSpec: pratilipi-de-assignment:content_data.content_meta
+                 <li> gcpTempLocation: gs://de-assignment-01/content-meta
+            </ul>
+    <li> Use minimum number of workers in dataflow job config for testing purpose. Scale it according to volume of data in future.
+    </ul>
+        
+            
