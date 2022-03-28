@@ -27,6 +27,54 @@ And navigate to `http://127.0.0.1:8000/user_content/?user_id=65045&query_date=20
 
 ## Query
 
-Output data is driven by query. Query is performed on two table which are present inside google big query named user_interaction and content_meta.
+Response data from API is query driven. Query is performed on two table which are present inside google big query named user_interaction and content_meta.
 
 query used:
+
+```sh
+        select ARRAY_AGG(struct(category_name, category_count)) as json_val from (
+            select user_id, category_name, count(*) as category_count from (
+                    SELECT A.*, B.category_name from (
+                        SELECT * FROM `pratilipi-de-assignment.user_interaction.user_interaction_partitioned` 
+                        WHERE updated_at >= '2021-12-13' and updated_at<='2021-12-27' and user_id=6504233704206137 and read_percent>90
+                    ) as A
+                    inner join 
+                    (
+                        SELECT * FROM `pratilipi-de-assignment.content_data.content_meta` 
+                    ) as B on A.content_id=B.content_id 
+            ) group by user_id, category_name
+        ) group by user_id
+```
+
+query output:
+```sh
+{
+  "detective":0.0015754233950374162,
+  "erotica":0.01811736904293029,
+  "life":0.03938558487593541,
+  "crime":0.00866482867270579,
+  "drama":0.02678219771563608,
+  "women":0.054352107128790864,
+  "family":0.0771957463568334,
+  "horror":0.0019692792437967705,
+  "novels":0.15596691610870422,
+  "social":0.027176053564395432,
+  "fantasy":0.0019692792437967705,
+  "romance":0.29617959826703427,
+  "suspense":0.08507286333202048,
+  "swahindi2":0.0019692792437967705,
+  "webseries":0.03662859393461993,
+  "shortstories":0.024812918471839307,
+  "Serieswriting":0.007877116975187082,
+  "entertainment":0.020086648286727057,
+  "action-and-adventure":0.06498621504529342,
+  "Pratilipi-Awards-Hindi":0.04923198109491926
+}
+```
+Suggested solution is based on google clouud platform.
+Components used in data pipeline.
+<li> Google Pub/Sub
+  <p> - For event data ingestion. 
+<li> Google BigQuery
+<li> Google Cloud Storage
+<li> Google Dataflow
