@@ -27,7 +27,7 @@ And navigate to `http://127.0.0.1:8000/user_content/?user_id=65045&query_date=20
 
 ## Query
 
-Response data from API is query driven. Query is performed on two table which are present inside google big query named user_interaction and content_meta.
+Response data from API is query driven. Query is performed on two table which are present inside google big query named <i>user_interaction</i> and <i>content_meta</i>.
 
 query used:
 
@@ -79,14 +79,33 @@ Suggested solution is based on google cloud platform.
     <li> Data present at two different source. So two topics are needed (i.e. content-meta and user-interaction).
     <li> To continously ingest data from source to Pus/Sub topic, one need to integrate source with Pub/Sub. I have used Pub/Sub python client module to push sample data for ingestion into Pub/Sub topics.
     <li> Code to push data into Pub/Sub topic:
-        <ul>
-           <li> To push data into user-interaction topic: </li>
-                ```
-                        code block
-                ```
-           <li> To push data into content-meta topic: </li>
-        </ul>
-    <li> Data present at PubSub level can also be used as data source for different realtime streaming analytics applications which are dependent on user content interaction.  
+                  
+            
+                # To push data into user-interaction topic
+                import json
+                from google.cloud import pubsub_v1
+                project_id = "pratilipi-de-assignment"
+                topic_id = "user-interaction"
+                publisher = pubsub_v1.PublisherClient()
+                topic_path = publisher.topic_path(project_id, topic_id)
+                d = { "user_id": 65045, "content_id": 12345, "read_percent": 92, "updated_at": '2022-03-27'}
+                data = json.dumps(d).encode("utf-8")
+                future = publisher.publish(topic_path, data)
+
+            
+                # To push data into content-meta topic
+                import json
+                from google.cloud import pubsub_v1
+                project_id = "pratilipi-de-assignment"
+                topic_id = "content-meta"
+                publisher = pubsub_v1.PublisherClient()
+                topic_path = publisher.topic_path(project_id, topic_id)
+                d = {"content_id": 12345, "category_name": "test_cat2" }
+                data = json.dumps(d).encode("utf-8")
+                future = publisher.publish(topic_path, data)
+          
+
+  <li> Data present at PubSub level can also be used as data source for different realtime streaming analytics applications which are dependent on user content interaction.  
     <li> Similar opensource solution: <b> <i> kafka + big query kafka sink connector </i> </b>
   </ul>
 </li>
@@ -113,20 +132,21 @@ Suggested solution is based on google cloud platform.
     <li> Subscribe <i>user-interaction</i> topic in Pub/Sub to <i>user-interaction</i> table in bigquery
     <li> First job config:
             <ul>
-                 <li> jobName: ps-to-bq-user-interaction_test (any unique name)
-                 <li> inputTopic: projects/pratilipi-de-assignment/topics/user-interaction
-                 <li> outputTableSpec: pratilipi-de-assignment:user_interaction.user_interaction_partitioned
-                 <li> gcpTempLocation: gs://de-assignment-01/test
+                 <li> jobName: ps-to-bq-user-interaction_test</i> (any unique name)
+                 <li> inputTopic: projects/pratilipi-de-assignment/topics/user-interaction</i>
+                 <li> outputTableSpec: pratilipi-de-assignment:user_interaction.user_interaction_partitioned</i>
+                 <li> gcpTempLocation: gs://de-assignment-01/test</i>
             </ul>
     <li> Subscribe <i>content-meta</i> topic in Pub/Sub to <i>content-meta</i> table in bigquery
     <li> Second job config:
             <ul>
-                 <li> jobName: ps-to-bq-content-meta (any unique name)
-                 <li> inputTopic: projects/pratilipi-de-assignment/topics/content-meta
-                 <li> outputTableSpec: pratilipi-de-assignment:content_data.content_meta
-                 <li> gcpTempLocation: gs://de-assignment-01/content-meta
+                    <li> jobName: <i>ps-to-bq-content-meta </i> (any unique name)
+                 <li> inputTopic: <i>projects/pratilipi-de-assignment/topics/content-meta </i>
+                 <li> outputTableSpec: <i>pratilipi-de-assignment:content_data.content_meta </i>
+                 <li> gcpTempLocation: <i>gs://de-assignment-01/content-meta</i>
             </ul>
     <li> Use minimum number of workers in dataflow job config for testing purpose. Scale it according to volume of data in future.
     </ul>
         
-            
+## Performance
+   Data published asynchronously, 1000 at a time to user-interacction Pub/Sub topic. Same data is present inside google big query with approx 5 sec of delay.
