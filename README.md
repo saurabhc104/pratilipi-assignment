@@ -149,4 +149,4 @@ Suggested solution is based on google cloud platform.
     </ul>
         
 ## Performance
-   Data published asynchronously, 1000 at a time to user-interacction Pub/Sub topic. Same data is present inside google big query with approx 5-10 seconds of delay.
+   Data published asynchronously, 1000 at a time to user-interacction Pub/Sub topic. Same data is present inside google big query with approximate 5-10 seconds of delay.
