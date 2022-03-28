@@ -46,7 +46,7 @@ query used:
         ) group by user_id
 ```
 
-query output:
+API response:
 ```sh
 {
   "detective":0.0015754233950374162,
