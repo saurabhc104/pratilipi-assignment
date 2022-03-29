@@ -158,6 +158,42 @@ Suggested solution is based on google cloud platform.
 | 10000         |  5-10 seconds   |
 | 100000        | 10-15 seconds   |
 
+Code to push data asynchronously into topic:
+```python
+
+from concurrent import futures
+from google.cloud import pubsub_v1
+from typing import Any, Callable
+import json
+
+project_id = "pratilipi-de-assignment"
+topic_id = "user-interaction"
+
+publisher = pubsub_v1.PublisherClient()
+topic_path = publisher.topic_path(project_id, topic_id)
+publish_futures = []
+
+def get_callback(publish_future: pubsub_v1.publisher.futures.Future, data: str) -> Callable[[pubsub_v1.publisher.futures.Future], None]:
+    def callback(publish_future: pubsub_v1.publisher.futures.Future) -> None:
+        try:
+            # Wait 60 seconds for the publish call to succeed.
+            print(publish_future.result(timeout=60))
+        except futures.TimeoutError:
+            print(f"Publishing {data} timed out.")
+
+    return callback
+
+d = { "user_id": 65045, "content_id": 12345, "read_percent": 92, "updated_at": '2022-03-28'}
+data = json.dumps(d).encode("utf-8")
+
+for i in range(10000):
+    publish_future = publisher.publish(topic_path, data)
+    publish_future.add_done_callback(get_callback(publish_future, data))
+    publish_futures.append(publish_future)
+
+futures.wait(publish_futures, return_when=futures.ALL_COMPLETED)
+
+```
 
 
 
