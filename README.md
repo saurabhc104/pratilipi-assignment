@@ -198,7 +198,7 @@ futures.wait(publish_futures, return_when=futures.ALL_COMPLETED)
 
 
 
-## Alternate architecture
+## Alternate architecture on AWS
 
 <p align="center">
 <img src="alt.png" width="650">
