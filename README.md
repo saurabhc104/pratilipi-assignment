@@ -17,6 +17,7 @@ virtualenv env_assignment
 (env_assignment)$ pip install -r requirements.txt
 (env_assignment)$ export GOOGLE_APPLICATION_CREDENTIALS="pratilipi-de-assignment-e13f7dde49.json"
 ```
+Please ask for original json file credential before setup.
 
 And navigate to `http://127.0.0.1:8000/user_content/?user_id=65045&query_date=2022-03-27`
 
