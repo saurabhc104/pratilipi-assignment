@@ -13,7 +13,7 @@ Then install the dependencies:
 
 
 ```sh 
-virtualenv env_assignment
+$ virtualenv env_assignment
 (env_assignment)$ pip install -r requirements.txt
 (env_assignment)$ export GOOGLE_APPLICATION_CREDENTIALS="pratilipi-de-assignment-e13f7dde49.json"
 ```
